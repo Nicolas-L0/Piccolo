@@ -1,5 +1,6 @@
 #include "runtime/function/animation/pose.h"
 
+
 using namespace Pilot;
 
 AnimationPose::AnimationPose() { m_reorder = false; }
@@ -69,6 +70,16 @@ void AnimationPose::blend(const AnimationPose& pose)
             // bone_trans_one.m_position  =
             // bone_trans_one.m_scale     =
             // bone_trans_one.m_rotation  =
+        }
+
+        float sum_weight = m_weight.m_blend_weight[i] + pose.m_weight.m_blend_weight[i];
+        if (sum_weight != 0)
+        { 
+            float cur_weight           = m_weight.m_blend_weight[i] / sum_weight;
+            m_weight.m_blend_weight[i] = sum_weight;
+            bone_trans_one.m_position  = Vector3::lerp(bone_trans_one.m_position, bone_trans_two.m_position, 1 - cur_weight);
+            bone_trans_one.m_scale     = Vector3::lerp(bone_trans_one.m_scale, bone_trans_two.m_scale, 1 - cur_weight);
+            bone_trans_one.m_rotation  = Quaternion::sLerp(1 - cur_weight, bone_trans_one.m_rotation, bone_trans_two.m_rotation, true);
         }
     }
 }
