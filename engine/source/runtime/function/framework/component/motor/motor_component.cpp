@@ -100,7 +100,7 @@ namespace Pilot
         bool has_sprint_command = (unsigned int)GameCommand::sprint & command;
 
         bool  is_acceleration    = false;
-        float final_acceleration = m_motor_res.m_move_acceleration;
+        float final_acceleration = m_motor_res.m_move_acceleration;  //行走a
         float min_speed_ratio    = 0.f;
         float max_speed_ratio    = 0.f;
         if (has_move_command)
@@ -109,7 +109,7 @@ namespace Pilot
             max_speed_ratio = m_motor_res.m_max_move_speed_ratio;
             if (m_move_speed_ratio >= m_motor_res.m_max_move_speed_ratio)
             {
-                final_acceleration = m_motor_res.m_sprint_acceleration;
+                final_acceleration = m_motor_res.m_sprint_acceleration;  //冲刺a
                 is_acceleration    = has_sprint_command;
                 min_speed_ratio    = m_motor_res.m_max_move_speed_ratio;
                 max_speed_ratio    = m_motor_res.m_max_sprint_speed_ratio;
@@ -123,7 +123,7 @@ namespace Pilot
         }
 
         m_move_speed_ratio += (is_acceleration ? 1.0f : -1.0f) * final_acceleration * delta_time;
-        m_move_speed_ratio = std::clamp(m_move_speed_ratio, min_speed_ratio, max_speed_ratio);
+        m_move_speed_ratio = std::clamp(m_move_speed_ratio, min_speed_ratio, max_speed_ratio); //移速范围限制
     }
 
     void MotorComponent::calculatedDesiredVerticalMoveSpeed(unsigned int command, float delta_time)
@@ -137,6 +137,7 @@ namespace Pilot
 
         const float gravity = physics_scene->getGravity().length();
 
+        // 踩空下落
         if (m_jump_state == JumpState::idle && m_controller->isTouchGround() == false)
         {
             m_jump_state = JumpState::falling;
@@ -144,10 +145,11 @@ namespace Pilot
 
         if (m_jump_state == JumpState::idle)
         {
+            // 空闲 - 起跳动作
             if ((unsigned int)GameCommand::jump & command)
             {
                 m_jump_state                    = JumpState::rising;
-                m_vertical_move_speed           = Math::sqrt(m_motor_res.m_jump_height * 2 * gravity);
+                m_vertical_move_speed           = Math::sqrt(m_motor_res.m_jump_height * 2 * gravity); //v^2=2gh  <-  2ax=(vt)^2-(v0)^2
                 m_jump_horizontal_speed_ratio   = m_move_speed_ratio;
             }
             else
@@ -155,6 +157,7 @@ namespace Pilot
                 m_vertical_move_speed = 0.f;
             }
         }
+        // 非空闲 - 起跳&下落（浮空期间，Vz减小）
         else if (m_jump_state == JumpState::rising || m_jump_state == JumpState::falling)
         {
             m_vertical_move_speed -= gravity * delta_time;
@@ -172,7 +175,8 @@ namespace Pilot
             Vector3 forward_dir = object_rotation * Vector3::NEGATIVE_UNIT_Y;
             Vector3 left_dir    = object_rotation * Vector3::UNIT_X;
 
-            if (command > 0)
+            //if (command > 0) 
+            if (command > 0 && !((unsigned int)GameCommand::sprint & command)) //增加了对“按住冲刺”时“松开方向”的惯性停止
             {
                 m_desired_horizontal_move_direction = Vector3::ZERO;
             }
@@ -208,6 +212,7 @@ namespace Pilot
         m_desired_displacement =
             m_desired_horizontal_move_direction * m_motor_res.m_move_speed * horizontal_speed_ratio * delta_time +
             Vector3::UNIT_Z * m_vertical_move_speed * delta_time;
+        //  m_motor_res.m_move_speed 的 default = 2.0, 是水平移动速度的整体倍率
     }
 
     void MotorComponent::calculateTargetPosition(const Vector3&& current_position)

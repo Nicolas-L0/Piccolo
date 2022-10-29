@@ -43,13 +43,13 @@ namespace Pilot
         void calculatedDesiredHorizontalMoveSpeed(unsigned int command, float delta_time);
         void calculatedDesiredVerticalMoveSpeed(unsigned int command, float delta_time);
         void calculatedDesiredMoveDirection(unsigned int command, const Quaternion& object_rotation);
-        void calculateDesiredDisplacement(float delta_time);
-        void calculateTargetPosition(const Vector3&& current_position);
+        void calculateDesiredDisplacement(float delta_time); //计算逻辑期望位移
+        void calculateTargetPosition(const Vector3&& current_position); //计算最终移动位置
 
         META(Enable)
         MotorComponentRes m_motor_res;
 
-        float m_move_speed_ratio {0.f};
+        float m_move_speed_ratio {0.f}; 
         float m_vertical_move_speed {0.f};
         float m_jump_horizontal_speed_ratio {0.f};
 
