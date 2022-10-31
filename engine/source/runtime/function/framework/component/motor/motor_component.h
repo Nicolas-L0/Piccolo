@@ -17,7 +17,8 @@ namespace Piccolo
     {
         idle,
         rising,
-        falling
+        falling,
+        flying,
     };
 
     REFLECTION_TYPE(MotorComponent)

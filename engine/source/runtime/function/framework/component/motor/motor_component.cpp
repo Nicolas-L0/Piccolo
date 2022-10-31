@@ -121,37 +121,60 @@ namespace Piccolo
             g_runtime_global_context.m_world_manager->getCurrentActivePhysicsScene().lock();
         ASSERT(physics_scene);
 
-        if (m_motor_res.m_jump_height == 0.f)
-            return;
-
         const float gravity = physics_scene->getGravity().length();
 
-        if (m_jump_state == JumpState::idle)
+        if (m_motor_res.m_fly_acceleration > 0.f) //当向上加速度>=0时，飞行功能将代替跳跃功能 
         {
-            if ((unsigned int)GameCommand::jump & command)
+            float max_fly_speed     = m_motor_res.m_max_fly_speed, 
+                  min_fly_speed     = -37.2;
+
+            if ((unsigned int)GameCommand::jump & command) //when space is pressed
             {
-                m_jump_state                  = JumpState::rising;
-                m_vertical_move_speed         = Math::sqrt(m_motor_res.m_jump_height * 2 * gravity);
-                m_jump_horizontal_speed_ratio = m_move_speed_ratio;
+                m_jump_state = JumpState::flying;
+                m_vertical_move_speed += m_motor_res.m_fly_acceleration * delta_time; //rising
             }
+            else if (m_jump_state == JumpState::idle)
+                m_vertical_move_speed = 0.f;
             else
             {
-                m_vertical_move_speed = 0.f;
+                m_vertical_move_speed -= gravity * delta_time;
+                if (m_vertical_move_speed < 0)
+                    m_jump_state = JumpState::falling;
             }
+            m_vertical_move_speed = std::clamp(m_vertical_move_speed, min_fly_speed, max_fly_speed); 
         }
-        else if (m_jump_state == JumpState::rising || m_jump_state == JumpState::falling)
+        else                                    //下面是原来的“跳跃”功能
         {
-            m_vertical_move_speed -= gravity * delta_time;
-            if (m_vertical_move_speed <= 0.f)
+            if (m_motor_res.m_jump_height == 0.f)
+                return;
+
+            if (m_jump_state == JumpState::idle)
             {
-                m_jump_state = JumpState::falling;
+                if ((unsigned int)GameCommand::jump & command)
+                {
+                    m_jump_state                  = JumpState::rising;
+                    m_vertical_move_speed         = Math::sqrt(m_motor_res.m_jump_height * 2 * gravity);
+                    m_jump_horizontal_speed_ratio = m_move_speed_ratio;
+                }
+                else
+                {
+                    m_vertical_move_speed = 0.f;
+                }
+            }
+            else if (m_jump_state == JumpState::rising || m_jump_state == JumpState::falling)
+            {
+                m_vertical_move_speed -= gravity * delta_time;
+                if (m_vertical_move_speed <= 0.f)
+                {
+                    m_jump_state = JumpState::falling;
+                }
             }
         }
     }
 
     void MotorComponent::calculatedDesiredMoveDirection(unsigned int command, const Quaternion& object_rotation)
     {
-        if (m_jump_state == JumpState::idle)
+        if (m_jump_state == JumpState::idle || m_jump_state == JumpState::flying)
         {
             Vector3 forward_dir = object_rotation * Vector3::NEGATIVE_UNIT_Y;
             Vector3 left_dir    = object_rotation * Vector3::UNIT_X;
@@ -188,7 +211,7 @@ namespace Piccolo
     void MotorComponent::calculateDesiredDisplacement(float delta_time)
     {
         float horizontal_speed_ratio =
-            m_jump_state == JumpState::idle ? m_move_speed_ratio : m_jump_horizontal_speed_ratio;
+            (m_jump_state == JumpState::idle || m_jump_state == JumpState::flying) ? m_move_speed_ratio : m_jump_horizontal_speed_ratio;
         m_desired_displacement =
             m_desired_horizontal_move_direction * m_motor_res.m_move_speed * horizontal_speed_ratio * delta_time +
             Vector3::UNIT_Z * m_vertical_move_speed * delta_time;

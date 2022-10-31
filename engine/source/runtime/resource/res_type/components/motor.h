@@ -49,6 +49,10 @@ namespace Piccolo
         float m_move_acceleration {0.f};
         float m_sprint_acceleration { 0.f};
 
+        float m_max_fly_speed {0.f};        //飞行时最大垂直上升速度
+        float m_fly_acceleration {0.f};     //飞行时向上加速度
+        
+
         Reflection::ReflectionPtr<ControllerConfig> m_controller_config;
     };
 } // namespace Piccolo

@@ -24,7 +24,7 @@ namespace Piccolo
 
     void InputSystem::onKeyInGameMode(int key, int scancode, int action, int mods)
     {
-        m_game_command &= (k_complement_control_command ^ (unsigned int)GameCommand::jump);
+        //m_game_command &= (k_complement_control_command ^ (unsigned int)GameCommand::jump);
 
         if (action == GLFW_PRESS)
         {
@@ -85,6 +85,9 @@ namespace Piccolo
                     break;
                 case GLFW_KEY_D:
                     m_game_command &= (k_complement_control_command ^ (unsigned int)GameCommand::right);
+                    break;
+                case GLFW_KEY_SPACE:
+                    m_game_command &= (k_complement_control_command ^ (unsigned int)GameCommand::jump);
                     break;
                 case GLFW_KEY_LEFT_CONTROL:
                     m_game_command &= (k_complement_control_command ^ (unsigned int)GameCommand::squat);
