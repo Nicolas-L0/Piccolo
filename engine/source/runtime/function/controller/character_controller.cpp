@@ -87,8 +87,11 @@ namespace Pilot
         //   final_position += /**** [3] ****/;
         //}
         // else
+<<<<<<< HEAD
 
         // side pass
+=======
+>>>>>>> f5aa03479f1931ad2ed68bf4ad6de078a46b7d5b
         if (physics_scene->sweep(
             m_rigidbody_shape,
             world_transform.getMatrix(),
