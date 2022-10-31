@@ -77,19 +77,31 @@ namespace Pilot
         hits.clear();
 
         // side pass
-        //if (physics_scene->sweep(
-        //    m_rigidbody_shape,
-        //    /**** [0] ****/,
-        //    /**** [1] ****/,
-        //    /**** [2] ****/,
-        //    hits))
+        // if (physics_scene->sweep(
+        // m_rigidbody_shape,
+        // /**** [0] ****/,
+        // /**** [1] ****/,
+        // /**** [2] ****/,
+        // hits))
         //{
-        //    final_position += /**** [3] ****/;
+        //   final_position += /**** [3] ****/;
         //}
-        //else
+        // else
+        if (physics_scene->sweep(
+            m_rigidbody_shape,
+            world_transform.getMatrix(),
+            horizontal_direction, 
+            horizontal_displacement.length() + 0.5f,
+            hits))
+        {
+            final_position += hits[0].hit_distance * horizontal_direction;
+        }
+        else
         {
             final_position += horizontal_displacement;
         }
+
+        hits.clear();
 
         return final_position;
     }

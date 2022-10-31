@@ -197,6 +197,13 @@ namespace Pilot
         m_pending_remove_bodies.clear();
     }
 
+
+    /// cast a ray and find the hits
+    /// @ray_origin: origin of ray
+    /// @ray_direction: ray direction
+    /// @ray_length: ray length, anything beyond this length will not be reported as a hit
+    /// @out_hits: the found hits, sorted by distance
+    /// @return: true if any hits found, else false
     bool PhysicsScene::raycast(Vector3                      ray_origin,
                                Vector3                      ray_directory,
                                float                        ray_length,
@@ -246,6 +253,14 @@ namespace Pilot
         return true;
     }
 
+
+    /// cast a shape and find the hits
+    /// @shape: the casted rigidbody shape
+    /// @shape_transform: the initial global transform of the casted shape
+    /// @sweep_direction: sweep direction
+    /// @sweep_length: sweep length, anything beyond this length will not be reported as a hit
+    /// @out_hits: the found hits, sorted by distance
+    /// @return: true if any hits found, else false
     bool PhysicsScene::sweep(const RigidBodyShape&        shape,
                              const Matrix4x4&             shape_transform,
                              Vector3                      sweep_direction,
@@ -302,6 +317,11 @@ namespace Pilot
         return true;
     }
 
+
+    /// overlap test
+    /// @shape: rigidbody shape
+    /// @global_transform: testing shape transform
+    /// @return: true if overlapped with any rigidbodies
     bool PhysicsScene::isOverlap(const RigidBodyShape& shape, const Matrix4x4& global_transform)
     {
         const JPH::NarrowPhaseQuery& scene_query = m_physics.m_jolt_physics_system->GetNarrowPhaseQuery();
